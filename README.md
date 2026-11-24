@@ -55,6 +55,7 @@ Owner(r) ≠ Tenant(u)  ⇒  Access(u, r) = Denied (HTTP 403, no data)
 One command runs the whole cycle against the deployed app:
 
 ```bash
+cp .env.example .env   # already points at the live deployment
 npm run verify
 ```
 
@@ -96,6 +97,14 @@ actually ran against the live deployment:
 
 ## Replay the loop yourself (judges)
 
+### Prerequisites
+
+- **Node.js 20+**
+- **Kane CLI** (for the real-browser sessions):
+  `npm install -g @testmuai/kane-cli`, then `kane-cli login`.
+  *(If Kane CLI is not installed or not logged in, the authenticated
+  HTTP probe oracle still runs and enforces the isolation verdict.)*
+
 The shipped default is safe. Re-open the controlled vulnerability,
 watch TenantFence catch it, patch it, and re-verify — all locally,
 no Vercel account needed:
@@ -113,6 +122,13 @@ finding bundle and a ready-made patch brief at
 `artifacts/evidence/muse-patch-prompt.md`. Hand that file to your AI
 coding agent (or apply the one check yourself), and the loop detects
 the change, re-runs, and closes with `TENANT_ISOLATION_VERIFIED`.
+
+> **Fully automated agent hand-off:** set `AGENT_CMD` in `.env` (for
+> example `claude -p`, `codex`, or any CLI agent that reads a prompt
+> from stdin) and the bridge pipes `muse-patch-prompt.md` to it
+> automatically instead of waiting for a manual hand-off. TenantFence
+> is agent-agnostic; Muse is simply the agent used in the recorded
+> run.
 
 Restore the safe state at any time:
 
