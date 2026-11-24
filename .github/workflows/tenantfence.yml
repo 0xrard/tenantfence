@@ -1,0 +1,86 @@
+# TenantFence — tenant-isolation verification on every PR and push.
+#
+# What this does:
+#   1. Type-checks the orchestrator.
+#   2. Builds the InvoiceFlow target app and serves it locally.
+#   3. Runs the full TenantFence verification against the local target.
+#      The HTTP probe oracle (real login cookies vs. the ownership
+#      manifest) is authoritative and needs no secrets. Kane CLI browser
+#      sessions run too when the CLI is available; without a Kane login
+#      they are recorded as not-executed and the probe verdict stands.
+#
+# Exit code: 0 only when the verdict is TENANT_ISOLATION_VERIFIED.
+# If the controlled IDOR is re-opened (npm run vuln:reopen) this
+# workflow FAILS — in CI mode the orchestrator writes the finding
+# bundle and exits immediately instead of waiting for a patch.
+
+name: TenantFence
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install orchestrator dependencies
+        run: npm install
+
+      - name: Type-check the orchestrator
+        run: npm run typecheck
+
+      - name: Install and build the target app
+        working-directory: target-saas
+        run: |
+          npm install
+          npm run build
+
+      - name: Serve the target app locally
+        working-directory: target-saas
+        run: |
+          nohup npm run start -- -p 3000 > /tmp/target-saas.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/api/health > /dev/null; then
+              echo "Target app is healthy."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Target app did not become healthy:"
+          cat /tmp/target-saas.log
+          exit 1
+
+      # Optional: to also exercise the Kane CLI browser sessions in CI,
+      # install the CLI and provide your TestMu AI credentials via your
+      # repository's secret store, then log in before this step:
+      #   - run: npm install -g @testmuai/kane-cli
+      # The verification below is complete without it (probe oracle).
+
+      - name: Run TenantFence verification
+        env:
+          TARGET_URL: http://localhost:3000
+        run: npm run verify
+
+      - name: Upload verification artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tenantfence-evidence
+          path: |
+            artifacts/security-report.md
+            artifacts/security-report.html
+            artifacts/evidence/
+          if-no-files-found: ignore

@@ -12,6 +12,7 @@
 //
 // Exit code 0 only when the final verdict is TENANT_ISOLATION_VERIFIED.
 
+import { spawn, type ChildProcess } from "node:child_process";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -233,13 +234,92 @@ ${
 
 async function main(): Promise<number> {
   await loadDotEnv();
-  const targetUrl = (process.env.TARGET_URL || "").replace(/\/+$/, "");
+  const localFlag = process.argv.includes("--local");
+  let targetUrl = (process.env.TARGET_URL || "").replace(/\/+$/, "");
+  if (localFlag) {
+    // --local always wins over .env: the loop targets the local app
+    // (override the address with TF_LOCAL_URL if you need another port).
+    targetUrl = (process.env.TF_LOCAL_URL || "http://localhost:3000").replace(
+      /\/+$/,
+      ""
+    );
+  }
   if (!targetUrl) {
     console.error(
-      "TARGET_URL is not set. Copy .env.example to .env and set your deployed app URL."
+      "TARGET_URL is not set. Copy .env.example to .env and set your deployed app URL, or run with --local."
     );
     return 1;
   }
+  const isLocalTarget = /localhost|127\.0\.0\.1/.test(targetUrl);
+  let localServer: ChildProcess | null = null;
+  try {
+    if (isLocalTarget) {
+      localServer = await ensureLocalServer(targetUrl);
+    }
+    return await runLoop(targetUrl);
+  } finally {
+    if (localServer) await stopLocalServer(localServer);
+  }
+}
+
+/**
+ * Local-target support: if nothing healthy answers on the target's
+ * /api/health, start the target-saas dev server ourselves and wait for
+ * it. Returns the child process when WE started it (so the caller can
+ * stop it), or null when a server was already running (leave it alone).
+ */
+async function ensureLocalServer(targetUrl: string): Promise<ChildProcess | null> {
+  if (await fetchHealth(targetUrl)) {
+    console.log("[local] A healthy server already answers — reusing it.");
+    return null;
+  }
+  const port = new URL(targetUrl).port || "3000";
+  console.log(
+    `[local] Starting target-saas dev server on port ${port} (npm run dev)…`
+  );
+  const child = spawn("npm", ["run", "dev", "--", "-p", port], {
+    cwd: path.join(repoRoot, "target-saas"),
+    shell: process.platform === "win32",
+    detached: process.platform !== "win32",
+    stdio: "ignore",
+    env: process.env,
+  });
+  const deadline = Date.now() + 120_000;
+  while (Date.now() < deadline) {
+    if (child.exitCode !== null) {
+      throw new Error(
+        `Local dev server exited early with code ${child.exitCode}. Run 'npm install' inside target-saas first, then retry.`
+      );
+    }
+    if (await fetchHealth(targetUrl)) {
+      console.log("[local] Dev server is healthy.");
+      return child;
+    }
+    await new Promise((r) => setTimeout(r, 2_000));
+  }
+  await stopLocalServer(child);
+  throw new Error("Local dev server did not become healthy within 120s.");
+}
+
+async function stopLocalServer(child: ChildProcess): Promise<void> {
+  try {
+    if (process.platform === "win32" && child.pid) {
+      spawn("taskkill", ["/pid", String(child.pid), "/T", "/F"], {
+        stdio: "ignore",
+      });
+    } else if (child.pid) {
+      process.kill(-child.pid, "SIGTERM");
+    }
+  } catch {
+    try {
+      child.kill("SIGTERM");
+    } catch {
+      // already gone
+    }
+  }
+}
+
+async function runLoop(targetUrl: string): Promise<number> {
   const manifest = await loadManifest();
   console.log(`TenantFence closed-loop verification → ${targetUrl}`);
 
@@ -282,10 +362,24 @@ async function main(): Promise<number> {
     });
     console.log(`\n[bundle] artifacts/evidence/finding-bundle.json`);
     console.log(`[bundle] artifacts/evidence/muse-patch-prompt.md`);
-    const changed = await handOffToAgent({ repoRoot, promptPath });
+    const isCI =
+      (process.env.CI !== undefined &&
+        process.env.CI !== "" &&
+        process.env.CI !== "false") ||
+      process.argv.includes("--ci");
+    let changed = false;
+    if (isCI) {
+      console.log(
+        "[ci] CI environment detected — evidence bundle written; skipping the interactive patch hand-off so the pipeline can fail fast on the exposure."
+      );
+    } else {
+      changed = await handOffToAgent({ repoRoot, promptPath });
+    }
     if (!changed) {
       console.log(
-        "Patch not detected — stopping before Run 2. Re-run `npm run verify` after patching."
+        isCI
+          ? "CI run ends here with the exposure recorded."
+          : "Patch not detected — stopping before Run 2. Re-run `npm run verify` after patching."
       );
     } else {
       // Step 4 — wait for the redeploy (remote targets).
