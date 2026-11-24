@@ -1,0 +1,1 @@
+{"description":"TenantFence — closed-loop tenant-isolation verification for multi-tenant SaaS, powered by Kane CLI (TestMu AI).","devDependencies":{"@types/node":"^20.14.0","tsx":"^4.16.0","typescript":"^5.5.0"},"name":"tenantfence","private":true,"scripts":{"typecheck":"tsc --noEmit","verify":"tsx cli/orchestrator.ts"},"type":"module","version":"0.2.0"}

@@ -21,6 +21,32 @@ Built for the **Kane CLI Online Hackathon** (TestMu AI).
 - `specs/ownership.manifest.json` — the ownership contract: tenants,
   their credentials (test fixtures), the resources each tenant owns, and
   the sensitive markers that must never cross the fence.
+- `cli/` — the **TenantFence orchestrator** (TypeScript): generates Kane
+  CLI test specs from the manifest, runs them against the deployed app,
+  probes the JSON API with real session cookies, verifies the evidence
+  against the contract, hands proven findings to an AI coding agent as a
+  patch brief, waits for the redeploy, and re-verifies — the closed loop.
+
+## Run the closed loop
+
+Prerequisites: Node 20+, a deployed InvoiceFlow URL, and Kane CLI
+installed and logged in (`npm install -g @testmuai/kane-cli`, then
+`kane-cli login`).
+
+```bash
+npm install
+cp .env.example .env   # set TARGET_URL to your deployed app
+npm run verify
+```
+
+One command runs the whole cycle: reset → Kane browser sessions +
+HTTP probes (Run 1, before) → finding bundle
+(`artifacts/evidence/finding-bundle.json`) and patch brief
+(`artifacts/evidence/muse-patch-prompt.md`) → wait for the patch and
+the new Vercel deployment → re-run (Run 2, after) → final audit in
+`artifacts/security-report.md` / `.html`. The loop only reports
+`TENANT_ISOLATION_VERIFIED` when cross-tenant access is denied (403)
+**and** every owner can still open their own invoices.
 
 ## Run the target app
 
@@ -42,10 +68,12 @@ Useful endpoints: `POST /api/reset` (restore seed data), `GET /api/health`
 
 ## Status
 
-- **Tahap 1 (this commit):** target SaaS + ownership contract. The
-  invoice detail endpoint intentionally ships with the classic missing
+- **Tahap 1:** target SaaS + ownership contract, deployed live at
+  [tenantfence.vercel.app](https://tenantfence.vercel.app). The invoice
+  detail endpoint intentionally ships with the classic missing
   ownership check, so the fence has something real to catch.
-- **Tahap 2 (next):** the TenantFence orchestrator — Kane CLI run
-  generation from the manifest, verdict collection, and the auto-patch
-  loop that fixes the authorization hole and re-verifies until the
-  fence holds.
+- **Tahap 2:** the TenantFence orchestrator in `cli/` — manifest-driven
+  Kane CLI run generation, HTTP probe cross-check, verdict engine,
+  agent bridge (finding bundle + patch prompt, `AGENT_CMD` or
+  watch mode), deploy polling via `/api/health`, and the before/after
+  security report.
