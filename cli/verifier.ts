@@ -1,7 +1,7 @@
 // TenantFence verifier — compares run evidence against the ownership
 // manifest and decides, with proof, whether tenant isolation holds.
 //
-// Rules (from the Tahap 2 brief):
+// Rules (from the Phase 2 brief):
 //  - A cross-tenant access is a CROSS_TENANT_DATA_EXPOSURE when the API
 //    probe status is not 403; leaked markers are read from the probe
 //    body. Kane session text is never scanned for markers (the test

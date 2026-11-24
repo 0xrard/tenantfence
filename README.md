@@ -171,8 +171,8 @@ session).
 
 ## Status
 
-- **Tahap 1:** target SaaS + ownership contract, deployed live.
-- **Tahap 2:** the closed-loop orchestrator — loop completed against
+- **Phase 1:** target SaaS + ownership contract, deployed live.
+- **Phase 2:** the closed-loop orchestrator — loop completed against
   the live deployment, `TENANT_ISOLATION_VERIFIED`.
-- **Tahap 3:** judge replay (`vuln:reopen` / `verify:local`), CI
+- **Phase 3:** judge replay (`vuln:reopen` / `verify:local`), CI
   template, and this README.

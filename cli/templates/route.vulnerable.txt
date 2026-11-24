@@ -3,14 +3,14 @@ import { getSessionTenant } from "@/lib/session";
 import { findInvoiceById } from "@/lib/store";
 
 // ============================================================================
-// CONTROLLED VULNERABILITY — DELIBERATE, DO NOT "FIX" IN TAHAP 1.
+// CONTROLLED VULNERABILITY — DELIBERATE, DO NOT "FIX" IN PHASE 1.
 //
 // This handler authenticates the caller (401 when logged out) but then
 // returns ANY invoice by id without checking that
 // `invoice.tenantId === user.tenantId`. That missing ownership check is a
 // textbook BOLA/IDOR flaw, planted on purpose: TenantFence exists to catch
 // exactly this class of bug with Kane CLI, prove it with the ownership
-// manifest in specs/, and (Tahap 2) drive the patch loop. The fix lands
+// manifest in specs/, and (Phase 2) drive the patch loop. The fix lands
 // later as the product's own demo — not before the catch is recorded.
 // ============================================================================
 
