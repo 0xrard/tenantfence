@@ -1,65 +1,13 @@
 {
   "label": "before",
   "ownerAccessOk": true,
-  "findings": [
-    {
-      "kind": "CROSS_TENANT_DATA_EXPOSURE",
-      "accessorTenantId": "tenant-beta",
-      "accessorEmail": "finance@beta.test",
-      "resourceId": "INV-1001",
-      "ownerTenantId": "tenant-alpha",
-      "httpStatus": 403,
-      "leakedMarkers": [
-        "CONFIDENTIAL-ALPHA-9921",
-        "$15,000"
-      ],
-      "observedVia": [
-        "browser"
-      ],
-      "evidencePaths": [
-        "artifacts/evidence/run-before/kane/output-cross-tenant-beta-inv-1001/.internal/execution.json",
-        "artifacts/evidence/run-before/kane/output-cross-tenant-beta-inv-1001/.internal/meta.json",
-        "artifacts/evidence/run-before/kane/output-cross-tenant-beta-inv-1001/.internal/steps/1-c793dacc/flows/0/actions.ndjson",
-        "artifacts/evidence/run-before/kane/output-cross-tenant-beta-inv-1001/.internal/steps/2-4c50f627/flows/0/actions.ndjson",
-        "artifacts/evidence/run-before/kane/output-cross-tenant-beta-inv-1001/.internal/steps/3-914b28c3/flows/0/actions.ndjson",
-        "artifacts/evidence/run-before/kane/output-cross-tenant-beta-inv-1001/Result.md",
-        "artifacts/evidence/run-before/kane/cross-tenant-beta-inv-1001.ndjson.log",
-        "artifacts/evidence/run-before/kane/cross-tenant-beta-inv-1001_test.md"
-      ],
-      "detectedAt": "2026-11-24T13:08:54.387Z"
-    },
-    {
-      "kind": "CROSS_TENANT_DATA_EXPOSURE",
-      "accessorTenantId": "tenant-alpha",
-      "accessorEmail": "finance@alpha.test",
-      "resourceId": "INV-2001",
-      "ownerTenantId": "tenant-beta",
-      "httpStatus": 403,
-      "leakedMarkers": [
-        "CONFIDENTIAL-BETA-4410",
-        "$8,000"
-      ],
-      "observedVia": [
-        "browser"
-      ],
-      "evidencePaths": [
-        "artifacts/evidence/run-before/kane/output-cross-tenant-alpha-inv-2001/.internal/execution.json",
-        "artifacts/evidence/run-before/kane/output-cross-tenant-alpha-inv-2001/.internal/meta.json",
-        "artifacts/evidence/run-before/kane/output-cross-tenant-alpha-inv-2001/.internal/steps/1-61d535a6/flows/0/actions.ndjson",
-        "artifacts/evidence/run-before/kane/output-cross-tenant-alpha-inv-2001/.internal/steps/2-953af601/flows/0/actions.ndjson",
-        "artifacts/evidence/run-before/kane/output-cross-tenant-alpha-inv-2001/.internal/steps/3-84979a04/flows/0/actions.ndjson",
-        "artifacts/evidence/run-before/kane/output-cross-tenant-alpha-inv-2001/Result.md",
-        "artifacts/evidence/run-before/kane/cross-tenant-alpha-inv-2001.ndjson.log",
-        "artifacts/evidence/run-before/kane/cross-tenant-alpha-inv-2001_test.md"
-      ],
-      "detectedAt": "2026-11-24T13:08:54.387Z"
-    }
-  ],
-  "isolationVerified": false,
+  "findings": [],
+  "isolationVerified": true,
   "summary": [
     "Positive control OK: tenant-alpha can access INV-1001.",
     "Positive control OK: tenant-beta can access INV-2001.",
-    "EXPOSURE: tenant-beta reached INV-1001 owned by tenant-alpha (HTTP 403, leaked markers: CONFIDENTIAL-ALPHA-9921, $15,000).",
-    "EXPOSURE: tenant-alpha reached INV-2001 owned by tenant-beta (HTTP 403, leaked markers: CONFIDENTIAL-BETA-4410, $8,000)."
+    "Isolation OK: tenant-beta is denied INV-1001 (HTTP 403, no markers leaked).",
+    "Isolation OK: tenant-alpha is denied INV-2001 (HTTP 403, no markers leaked).",
+    "TENANT_ISOLATION_VERIFIED"
   ]
 }
