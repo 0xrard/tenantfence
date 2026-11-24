@@ -6,14 +6,14 @@ correct authorization fix so the closed loop can re-verify.
 
 ## What was proven
 
-Target: https://tenantfence.vercel.app (commit a22e9821b3a9a22ab8c7f1555684b71f351c3aea)
+Target: https://tenantfence.vercel.app (commit 7d37cde2a5edecc57e475ca0dffde93ca56fd85c)
 
 ### INV-1001 — owned by `tenant-alpha`
 
 - Accessor (attacker in this test): **finance@beta.test** (`tenant-beta`)
-- API probe result: HTTP **200** on `GET /api/invoices/INV-1001` with the accessor's session cookie
+- API probe result: HTTP **403** on `GET /api/invoices/INV-1001` with the accessor's session cookie
 - Sensitive markers leaked: `CONFIDENTIAL-ALPHA-9921`, `$15,000`
-- Observed via: api, browser
+- Observed via: browser
 - Kane CLI evidence:
   - artifacts/evidence/run-before/kane/output-cross-tenant-beta-inv-1001/.internal/execution.json
   - artifacts/evidence/run-before/kane/output-cross-tenant-beta-inv-1001/.internal/meta.json
@@ -27,9 +27,9 @@ Target: https://tenantfence.vercel.app (commit a22e9821b3a9a22ab8c7f1555684b71f3
 ### INV-2001 — owned by `tenant-beta`
 
 - Accessor (attacker in this test): **finance@alpha.test** (`tenant-alpha`)
-- API probe result: HTTP **200** on `GET /api/invoices/INV-2001` with the accessor's session cookie
+- API probe result: HTTP **403** on `GET /api/invoices/INV-2001` with the accessor's session cookie
 - Sensitive markers leaked: `CONFIDENTIAL-BETA-4410`, `$8,000`
-- Observed via: api, browser
+- Observed via: browser
 - Kane CLI evidence:
   - artifacts/evidence/run-before/kane/output-cross-tenant-alpha-inv-2001/.internal/execution.json
   - artifacts/evidence/run-before/kane/output-cross-tenant-alpha-inv-2001/.internal/meta.json
@@ -53,15 +53,15 @@ import { getSessionTenant } from "@/lib/session";
 import { findInvoiceById } from "@/lib/store";
 
 // ============================================================================
-// CONTROLLED VULNERABILITY — DELIBERATE, DO NOT "FIX" IN TAHAP 1.
+// OWNERSHIP CHECK ENFORCED — patched via the TenantFence closed loop.
 //
-// This handler authenticates the caller (401 when logged out) but then
-// returns ANY invoice by id without checking that
-// `invoice.tenantId === user.tenantId`. That missing ownership check is a
-// textbook BOLA/IDOR flaw, planted on purpose: TenantFence exists to catch
-// exactly this class of bug with Kane CLI, prove it with the ownership
-// manifest in specs/, and (Tahap 2) drive the patch loop. The fix lands
-// later as the product's own demo — not before the catch is recorded.
+// This handler originally authenticated the caller but returned ANY
+// invoice by id without an ownership check (BOLA/IDOR). TenantFence
+// proved the exposure with Kane CLI browser sessions and an HTTP probe
+// (see artifacts/evidence/finding-bundle.json), the fix below was
+// applied from artifacts/evidence/muse-patch-prompt.md, and the loop
+// re-verified: cross-tenant requests now receive 403 while owners keep
+// full access to their own invoices.
 // ============================================================================
 
 export async function GET(
@@ -79,7 +79,13 @@ export async function GET(
     return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
   }
 
-  // BOLA/IDOR: no ownership validation here — see the banner above.
+  // Tenant isolation: an invoice is only visible to the tenant that
+  // owns it. Any other authenticated tenant gets 403, with no invoice
+  // fields in the response.
+  if (invoice.tenantId !== tenant.tenantId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   return NextResponse.json({ invoice });
 }
 

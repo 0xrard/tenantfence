@@ -1,5 +1,5 @@
 {
-  "commit_id": "6e96bb3f-eabb-4b44-93b6-9b06ab5e75cc",
+  "commit_id": "c74267d2-c296-4b16-894d-b302d4d44d98",
   "test_id": "a20a3b83-3aef-4248-9237-d8e731cf34f9",
   "testcase_id": "01M86QQ729AA4SP7X5YS5QN58T",
   "project_id": "01M86QH8GT2VE4VXAZ2VEFWPGJ",
@@ -8,11 +8,11 @@
   "session_name": "cross-tenant-beta-inv-1001",
   "executions": [
     {
-      "execution_id": "f5ee2bea-4c5b-4a82-8c0b-44e52133720a",
+      "execution_id": "b6840cbd-3dd7-4ad8-a22b-f8b7fa86ba92",
       "run_kind": "author",
-      "status": "failed",
+      "status": "passed",
       "valid": true,
-      "at": "2026-11-24T12:50:30.729Z"
+      "at": "2026-11-24T13:05:46.971Z"
     }
   ]
 }

@@ -8,13 +8,12 @@
       "accessorEmail": "finance@beta.test",
       "resourceId": "INV-1001",
       "ownerTenantId": "tenant-alpha",
-      "httpStatus": 200,
+      "httpStatus": 403,
       "leakedMarkers": [
         "CONFIDENTIAL-ALPHA-9921",
         "$15,000"
       ],
       "observedVia": [
-        "api",
         "browser"
       ],
       "evidencePaths": [
@@ -27,7 +26,7 @@
         "artifacts/evidence/run-before/kane/cross-tenant-beta-inv-1001.ndjson.log",
         "artifacts/evidence/run-before/kane/cross-tenant-beta-inv-1001_test.md"
       ],
-      "detectedAt": "2026-11-24T12:52:21.202Z"
+      "detectedAt": "2026-11-24T13:08:54.387Z"
     },
     {
       "kind": "CROSS_TENANT_DATA_EXPOSURE",
@@ -35,13 +34,12 @@
       "accessorEmail": "finance@alpha.test",
       "resourceId": "INV-2001",
       "ownerTenantId": "tenant-beta",
-      "httpStatus": 200,
+      "httpStatus": 403,
       "leakedMarkers": [
         "CONFIDENTIAL-BETA-4410",
         "$8,000"
       ],
       "observedVia": [
-        "api",
         "browser"
       ],
       "evidencePaths": [
@@ -54,14 +52,14 @@
         "artifacts/evidence/run-before/kane/cross-tenant-alpha-inv-2001.ndjson.log",
         "artifacts/evidence/run-before/kane/cross-tenant-alpha-inv-2001_test.md"
       ],
-      "detectedAt": "2026-11-24T12:52:21.202Z"
+      "detectedAt": "2026-11-24T13:08:54.387Z"
     }
   ],
   "isolationVerified": false,
   "summary": [
     "Positive control OK: tenant-alpha can access INV-1001.",
     "Positive control OK: tenant-beta can access INV-2001.",
-    "EXPOSURE: tenant-beta reached INV-1001 owned by tenant-alpha (HTTP 200, leaked markers: CONFIDENTIAL-ALPHA-9921, $15,000).",
-    "EXPOSURE: tenant-alpha reached INV-2001 owned by tenant-beta (HTTP 200, leaked markers: CONFIDENTIAL-BETA-4410, $8,000)."
+    "EXPOSURE: tenant-beta reached INV-1001 owned by tenant-alpha (HTTP 403, leaked markers: CONFIDENTIAL-ALPHA-9921, $15,000).",
+    "EXPOSURE: tenant-alpha reached INV-2001 owned by tenant-beta (HTTP 403, leaked markers: CONFIDENTIAL-BETA-4410, $8,000)."
   ]
 }

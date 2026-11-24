@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-24T12:52:21.206Z",
+  "generatedAt": "2026-11-24T13:08:54.393Z",
   "targetUrl": "https://tenantfence.vercel.app",
-  "commitSha": "a22e9821b3a9a22ab8c7f1555684b71f351c3aea",
+  "commitSha": "7d37cde2a5edecc57e475ca0dffde93ca56fd85c",
   "routeFile": "target-saas/app/api/invoices/[id]/route.ts",
   "findings": [
     {
@@ -10,13 +10,12 @@
       "accessorEmail": "finance@beta.test",
       "resourceId": "INV-1001",
       "ownerTenantId": "tenant-alpha",
-      "httpStatus": 200,
+      "httpStatus": 403,
       "leakedMarkers": [
         "CONFIDENTIAL-ALPHA-9921",
         "$15,000"
       ],
       "observedVia": [
-        "api",
         "browser"
       ],
       "evidencePaths": [
@@ -29,7 +28,7 @@
         "artifacts/evidence/run-before/kane/cross-tenant-beta-inv-1001.ndjson.log",
         "artifacts/evidence/run-before/kane/cross-tenant-beta-inv-1001_test.md"
       ],
-      "detectedAt": "2026-11-24T12:52:21.202Z"
+      "detectedAt": "2026-11-24T13:08:54.387Z"
     },
     {
       "kind": "CROSS_TENANT_DATA_EXPOSURE",
@@ -37,13 +36,12 @@
       "accessorEmail": "finance@alpha.test",
       "resourceId": "INV-2001",
       "ownerTenantId": "tenant-beta",
-      "httpStatus": 200,
+      "httpStatus": 403,
       "leakedMarkers": [
         "CONFIDENTIAL-BETA-4410",
         "$8,000"
       ],
       "observedVia": [
-        "api",
         "browser"
       ],
       "evidencePaths": [
@@ -56,7 +54,7 @@
         "artifacts/evidence/run-before/kane/cross-tenant-alpha-inv-2001.ndjson.log",
         "artifacts/evidence/run-before/kane/cross-tenant-alpha-inv-2001_test.md"
       ],
-      "detectedAt": "2026-11-24T12:52:21.202Z"
+      "detectedAt": "2026-11-24T13:08:54.387Z"
     }
   ]
 }

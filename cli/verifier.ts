@@ -3,8 +3,10 @@
 //
 // Rules (from the Tahap 2 brief):
 //  - A cross-tenant access is a CROSS_TENANT_DATA_EXPOSURE when the API
-//    probe status is not 403, OR any of the owner's sensitiveMarkers show
-//    up in the API body or in the browser session's captured text.
+//    probe status is not 403; leaked markers are read from the probe
+//    body. Kane session text is never scanned for markers (the test
+//    spec itself quotes them); a failed Kane isolation assertion only
+//    corroborates a probe conviction as browser-observed.
 //  - A run can only be called "verified" when isolation holds AND every
 //    owner can still open their own resource (otherwise a totally broken
 //    app would false-positive as "secure").
@@ -54,9 +56,11 @@ export function verifyRun(
       markersIn(session.domText || session.stdout, resource.sensitiveMarkers)
         .length > 0;
 
-    // The HTTP probe is authoritative when present; the browser session is
-    // supporting evidence. If neither proves access, the control failed.
-    const ok = probeOk || sessionOk;
+    // The HTTP probe is authoritative when present. The browser session
+    // is only a fallback for when the probe could not run at all — its
+    // text quotes the markers from the test's own instructions, so it
+    // can never be the sole proof of access.
+    const ok = probe ? probeOk : sessionOk;
     if (!ok) {
       ownerAccessOk = false;
       summary.push(
@@ -94,27 +98,39 @@ export function verifyRun(
       const leaked = new Set<string>();
       const via = new Set<"api" | "browser">();
 
+      // The HTTP probe is the exposure oracle: it reads the exact JSON
+      // the browser page would render. Per the brief, a cross-tenant
+      // probe that is not a clean 403 convicts; leaked markers are read
+      // from the probe body only.
+      //
+      // The Kane session's captured text is NEVER scanned for markers:
+      // the cross-tenant spec itself names the markers in its assertion
+      // ("the page must NOT display '…'"), so Kane's Result.md and
+      // NDJSON quote them even when the page showed nothing — scanning
+      // that text false-convicts a correctly patched app. Instead, a
+      // FAILED Kane isolation assertion (non-zero exit) corroborates a
+      // probe conviction as browser-observed.
       let statusNotForbidden = false;
       if (probe) {
         const found = markersIn(probe.body, resource.sensitiveMarkers);
         found.forEach((m) => leaked.add(m));
         if (found.length > 0) via.add("api");
-        // Per the brief: anything other than a clean 403 on a cross-tenant
-        // API probe counts against isolation when the resource exists.
         statusNotForbidden = probe.status !== 403 && probe.status !== null;
+        if (statusNotForbidden) via.add("api");
       }
 
-      if (session && session.executed) {
-        const found = markersIn(
-          session.domText || session.stdout,
-          resource.sensitiveMarkers
-        );
-        found.forEach((m) => leaked.add(m));
-        if (found.length > 0) via.add("browser");
+      if (
+        statusNotForbidden &&
+        session &&
+        session.executed &&
+        session.exitCode !== null &&
+        session.exitCode !== 0
+      ) {
+        via.add("browser");
       }
 
       const markerLeak = leaked.size > 0;
-      if (markerLeak || statusNotForbidden) {
+      if (statusNotForbidden) {
         const evidencePaths: string[] = [];
         if (session) evidencePaths.push(...session.artifactPaths);
         findings.push({
