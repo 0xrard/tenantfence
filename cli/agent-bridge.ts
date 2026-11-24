@@ -181,7 +181,7 @@ export async function handOffToAgent(args: {
     console.log("");
   }
 
-  const timeoutMs = args.watchTimeoutMs ?? 20 * 60 * 1000;
+  const timeoutMs = args.watchTimeoutMs ?? 5 * 60 * 1000;
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     await new Promise((r) => setTimeout(r, 2_000));

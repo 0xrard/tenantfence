@@ -1,0 +1,18 @@
+{
+  "commit_id": "345f6096-4af7-4243-8e83-53877acfb29f",
+  "test_id": "5030af4e-b73a-4c88-ad8c-9d47b687211e",
+  "testcase_id": "01M86QZ0DKTKG8DEQWTQH9VA3E",
+  "project_id": "01M86QH8GT2VE4VXAZ2VEFWPGJ",
+  "folder_id": "01M86QHEG6S2EB7TEYX73Z73X7",
+  "org_id": "3450120",
+  "session_name": "cross-tenant-alpha-inv-2001",
+  "executions": [
+    {
+      "execution_id": "2cfc608b-0fc7-41ae-a09d-81fccdda69e5",
+      "run_kind": "author",
+      "status": "failed",
+      "valid": true,
+      "at": "2026-11-24T12:52:09.600Z"
+    }
+  ]
+}

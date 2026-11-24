@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>TenantFence — Security Verification Report</title>
+<style>
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0b1220;color:#e5e9f0;margin:0;padding:2rem}
+  main{max-width:860px;margin:0 auto}
+  h1{font-size:1.6rem} h2{margin-top:2rem;color:#9fd0ff}
+  .status{display:inline-block;padding:.35rem .8rem;border-radius:999px;font-weight:700;background:#7f1d1d;color:#fff}
+  .finding{background:#1e293b;border:1px solid #7f1d1d;border-radius:.5rem;padding:1rem;margin:.5rem 0}
+  code{background:#111827;padding:.1rem .35rem;border-radius:.25rem}
+  li{margin:.3rem 0} .muted{color:#94a3b8}
+</style></head><body><main>
+<h1>TenantFence — Security Verification Report</h1>
+<p class="muted">Target: https://tenantfence.vercel.app · Generated: 2026-11-24T12:41:55.186Z</p>
+<p>Final status: <span class="status">SEE REPORT</span></p>
+<h2>Run 1 — Before patch</h2>
+<p class="muted">Commit: <code>a22e9821b3a9a22ab8c7f1555684b71f351c3aea</code></p>
+<ul><li>Positive control OK: tenant-alpha can access INV-1001.</li><li>Positive control OK: tenant-beta can access INV-2001.</li><li>EXPOSURE: tenant-beta reached INV-1001 owned by tenant-alpha (HTTP 200, leaked markers: CONFIDENTIAL-ALPHA-9921, $15,000).</li><li>EXPOSURE: tenant-alpha reached INV-2001 owned by tenant-beta (HTTP 200, leaked markers: CONFIDENTIAL-BETA-4410, $8,000).</li></ul>
+<div class="finding">
+        <strong>CROSS_TENANT_DATA_EXPOSURE</strong><br>
+        finance@beta.test (tenant-beta) reached
+        INV-1001 owned by tenant-alpha —
+        HTTP 200, leaked:
+        <code>CONFIDENTIAL-ALPHA-9921</code> <code>$15,000</code>
+      </div><div class="finding">
+        <strong>CROSS_TENANT_DATA_EXPOSURE</strong><br>
+        finance@alpha.test (tenant-alpha) reached
+        INV-2001 owned by tenant-beta —
+        HTTP 200, leaked:
+        <code>CONFIDENTIAL-BETA-4410</code> <code>$8,000</code>
+      </div>
+
+<h2>Evidence</h2>
+<ul>
+<li>Kane CLI artifacts: <code>artifacts/evidence/run-before/kane/</code>, <code>artifacts/evidence/run-after/kane/</code></li>
+<li>Finding bundle: <code>artifacts/evidence/finding-bundle.json</code></li>
+<li>Patch brief: <code>artifacts/evidence/muse-patch-prompt.md</code></li>
+</ul>
+</main></body></html>

@@ -1,0 +1,18 @@
+{
+  "commit_id": "6e96bb3f-eabb-4b44-93b6-9b06ab5e75cc",
+  "test_id": "a20a3b83-3aef-4248-9237-d8e731cf34f9",
+  "testcase_id": "01M86QQ729AA4SP7X5YS5QN58T",
+  "project_id": "01M86QH8GT2VE4VXAZ2VEFWPGJ",
+  "folder_id": "01M86QHEG6S2EB7TEYX73Z73X7",
+  "org_id": "3450120",
+  "session_name": "cross-tenant-beta-inv-1001",
+  "executions": [
+    {
+      "execution_id": "f5ee2bea-4c5b-4a82-8c0b-44e52133720a",
+      "run_kind": "author",
+      "status": "failed",
+      "valid": true,
+      "at": "2026-11-24T12:50:30.729Z"
+    }
+  ]
+}
