@@ -1,7 +1,7 @@
 # TenantFence — Security Verification Report
 
 Target: https://tenantfence.vercel.app
-Generated: 2026-11-24T12:41:55.181Z
+Generated: 2026-11-24T12:57:22.662Z
 Final status: **EXPOSURE_CONFIRMED_NOT_YET_FIXED**
 
 ## Run 1 — Before patch

@@ -3,15 +3,15 @@ import { getSessionTenant } from "@/lib/session";
 import { findInvoiceById } from "@/lib/store";
 
 // ============================================================================
-// CONTROLLED VULNERABILITY — DELIBERATE, DO NOT "FIX" IN TAHAP 1.
+// OWNERSHIP CHECK ENFORCED — patched via the TenantFence closed loop.
 //
-// This handler authenticates the caller (401 when logged out) but then
-// returns ANY invoice by id without checking that
-// `invoice.tenantId === user.tenantId`. That missing ownership check is a
-// textbook BOLA/IDOR flaw, planted on purpose: TenantFence exists to catch
-// exactly this class of bug with Kane CLI, prove it with the ownership
-// manifest in specs/, and (Tahap 2) drive the patch loop. The fix lands
-// later as the product's own demo — not before the catch is recorded.
+// This handler originally authenticated the caller but returned ANY
+// invoice by id without an ownership check (BOLA/IDOR). TenantFence
+// proved the exposure with Kane CLI browser sessions and an HTTP probe
+// (see artifacts/evidence/finding-bundle.json), the fix below was
+// applied from artifacts/evidence/muse-patch-prompt.md, and the loop
+// re-verified: cross-tenant requests now receive 403 while owners keep
+// full access to their own invoices.
 // ============================================================================
 
 export async function GET(
@@ -29,6 +29,12 @@ export async function GET(
     return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
   }
 
-  // BOLA/IDOR: no ownership validation here — see the banner above.
+  // Tenant isolation: an invoice is only visible to the tenant that
+  // owns it. Any other authenticated tenant gets 403, with no invoice
+  // fields in the response.
+  if (invoice.tenantId !== tenant.tenantId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   return NextResponse.json({ invoice });
 }
