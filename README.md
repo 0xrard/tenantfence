@@ -66,6 +66,9 @@ multi-tenant invoicing SaaS (Next.js App Router + TypeScript +
 Tailwind). The live deployment is the **patched** state: cross-tenant
 access is denied.
 
+**Demo video (3:15):** https://youtu.be/SN4P-LT4e4U — the full
+catch → patch → re-verify loop, narrated chapter by chapter.
+
 Demo accounts (test fixtures, also on the login page as quick-fill
 buttons):
 
